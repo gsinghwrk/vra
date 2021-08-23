@@ -6,8 +6,14 @@ from sqlalchemy import create_engine
 print('Begin reading csv file')
 df = pds.read_csv('data.csv')
 
-# Data cleanse and convert to float for df column new_case
+# Converting the string to float format
 df['new_case'] = df['new_case'].str.replace(',','').astype(float)
+df['new_death'] = df['new_death'].str.replace(',','').astype(float)
+df['total_cases'] = df['total_cases'].str.replace(',','').astype(float)
+df['total_deaths'] = df['total_deaths'].str.replace(',','').astype(float)
+
+# Converting the string to datetime format
+df['submission_date'] = pds.to_datetime(df['submission_date'], format='%m/%d/%Y')
 
 # Check and create column covid_cases_rate using df column new_case
 print('Check new_case condition')
@@ -20,9 +26,6 @@ nc_condition = [
 nc_value = ['HIGH', 'MEDIUM', 'LOW']
 
 df['covid_cases_rate'] = np.select(nc_condition, nc_value)
-
-# Data cleanse and convert to float for df column new_death
-df['new_death'] = df['new_death'].str.replace(',','').astype(float)
 
 # Check and create column covid_deaths_rate using df column new_death
 print('Check new_death condition')
@@ -41,7 +44,7 @@ df.head()
 
 # Load updated DataFrame to PostgreSQL database table
 print('Loading to database table us_covid_sample')
-engine = create_engine('postgresql://postgres:xxxxxx@127.0.0.1', pool_recycle=5432)
+engine = create_engine('postgresql://postgres:xxxxxxx@127.0.0.1', pool_recycle=5432)
 df.to_sql('us_covid_sample', engine, if_exists="replace", index=False)
 
 print('Database table us_covid_sample load completed')
